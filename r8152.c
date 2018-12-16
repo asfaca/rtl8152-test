@@ -1390,21 +1390,23 @@ static void intr_callback(struct urb *urb)
 		netif_info(tp, intr, tp->netdev, "intr status %d\n", status);
 		goto resubmit;
 	}
-
+	printk("rtl8152: is there any data in interrupt buffer? sw.kim\n");
 	d = urb->transfer_buffer;
 	if (INTR_LINK & __le16_to_cpu(d[0])) {
 		if (!netif_carrier_ok(tp->netdev)) {
 			set_bit(RTL8152_LINK_CHG, &tp->flags);
 			schedule_delayed_work(&tp->schedule, 0);
+			printk("rtl8152: schedule_delayed_work in interrupt callback. sw.kim\n");
 		}
 	} else {
 		if (netif_carrier_ok(tp->netdev)) {
 			netif_stop_queue(tp->netdev);
 			set_bit(RTL8152_LINK_CHG, &tp->flags);
 			schedule_delayed_work(&tp->schedule, 0);
+			printk("rtl8152: schedule_delayed_work in interrupt callback. sw.kim\n");
 		}
 	}
-
+	printk("rtl8152: return interrupt callback. sw.kim\n");
 resubmit:
 	res = usb_submit_urb(urb, GFP_ATOMIC);
 	if (res == -ENODEV) {
@@ -3826,39 +3828,53 @@ static void set_carrier(struct r8152 *tp)
 static void rtl_work_func_t(struct work_struct *work)
 {
 	struct r8152 *tp = container_of(work, struct r8152, schedule.work);
-
+	printk("rtl8152: enter rtl_work_func. sw.kim ------------\n");
 	/* If the device is unplugged or !netif_running(), the workqueue
 	 * doesn't need to wake the device, and could return directly.
 	 */
-	if (test_bit(RTL8152_UNPLUG, &tp->flags) || !netif_running(tp->netdev))
+	if (test_bit(RTL8152_UNPLUG, &tp->flags) || !netif_running(tp->netdev)) {
+		printk("rtl8152: step1.\n");
 		return;
+	}
 
-	if (usb_autopm_get_interface(tp->intf) < 0)
+	if (usb_autopm_get_interface(tp->intf) < 0) {
+		printk("rtl8152: step2.\n");
 		return;
+	}
 
-	if (!test_bit(WORK_ENABLE, &tp->flags))
+	if (!test_bit(WORK_ENABLE, &tp->flags)) {
+		printk("rtl8152: step3.\n");
 		goto out1;
+	}
 
 	if (!mutex_trylock(&tp->control)) {
+		printk("rtl8152: step4.\n");
 		schedule_delayed_work(&tp->schedule, 0);
 		goto out1;
 	}
 
-	if (test_and_clear_bit(RTL8152_LINK_CHG, &tp->flags))
+	if (test_and_clear_bit(RTL8152_LINK_CHG, &tp->flags)) {
+		printk("rtl8152: step5.\n");
 		set_carrier(tp);
+	}
 
-	if (test_and_clear_bit(RTL8152_SET_RX_MODE, &tp->flags))
+	if (test_and_clear_bit(RTL8152_SET_RX_MODE, &tp->flags)) {
+		printk("rtl8152: step6.\n");
 		_rtl8152_set_rx_mode(tp->netdev);
+	}
 
 	/* don't schedule napi before linking */
 	if (test_and_clear_bit(SCHEDULE_NAPI, &tp->flags) &&
-	    netif_carrier_ok(tp->netdev))
+	    netif_carrier_ok(tp->netdev)) {
+		printk("rtl8152: step7.\n");
 		napi_schedule(&tp->napi);
+	}
 
 	mutex_unlock(&tp->control);
-
+	printk("rtl8152: pre return\n");
 out1:
 	usb_autopm_put_interface(tp->intf);
+	printk("rtl8152: return rtl_work_func ------------\n");
 }
 
 static void rtl_hw_phy_work_func_t(struct work_struct *work)
