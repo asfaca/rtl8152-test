@@ -1876,6 +1876,11 @@ static int rx_bottom(struct r8152 *tp, int budget)
 	if (list_empty(&tp->rx_done))
 		goto out1;
 
+	INIT_LIST_HEAD(&rx_queue);
+	spin_lock_irqsave(&tp->rx_lock, flags);
+	list_splice_init(&tp->rx_done, &rx_queue);
+	spin_unlock_irqrestore(&tp->rx_lock, flags);
+
 	list_for_each_safe(cursor, next, &rx_queue) {
 		struct rx_desc *rx_desc;
 		struct rx_agg *agg;
