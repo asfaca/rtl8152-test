@@ -2299,7 +2299,8 @@ static int rtl_start_rx(struct r8152 *tp)
 	INIT_LIST_HEAD(&tp->rx_done);
 	for (i = 0; i < RTL8152_MAX_RX; i++) {
 		INIT_LIST_HEAD(&tp->rx_info[i].list);
-		printk("rtl8152: %dth rx_agg bulk rx urb starts transmission\n", i);
+		printk("rtl8152: %dth %p rx_agg bulk rx urb starts transmission\n", i,
+				&tp->rx_info[i]);
 		ret = r8152_submit_rx(tp, &tp->rx_info[i], GFP_KERNEL);
 		if (ret)
 			break;
