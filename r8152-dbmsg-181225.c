@@ -1910,6 +1910,7 @@ static int rx_bottom(struct r8152 *tp, int budget)
 		list_del_init(cursor);
 
 		agg = list_entry(cursor, struct rx_agg, list);
+		printk("rtl8152: rx agg address: %p in rx_bottom\n", agg);
 		urb = agg->urb;
 		if (urb->actual_length < ETH_ZLEN)
 			goto submit;
@@ -2068,7 +2069,6 @@ out:
 static
 int r8152_submit_rx(struct r8152 *tp, struct rx_agg *agg, gfp_t mem_flags)
 {
-	struct sk_buff *skb;
 	int ret;
 
 	/* The rx would be stopped, so skip submitting */
@@ -3808,7 +3808,7 @@ static void set_carrier(struct r8152 *tp)
 			netif_stop_queue(netdev);
 			napi_disable(napi);
 			netif_carrier_on(netdev);
-			printk("rtl815: first bulk rx urb tx in set_carrier\n");
+			printk("rtl8152: first bulk rx urb tx in set_carrier\n");
 			rtl_start_rx(tp);
 			clear_bit(RTL8152_SET_RX_MODE, &tp->flags);
 			_rtl8152_set_rx_mode(netdev);
