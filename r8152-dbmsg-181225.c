@@ -1919,7 +1919,7 @@ static int rx_bottom(struct r8152 *tp, int budget)
 		rx_data = agg->head;
 		len_used += sizeof(struct rx_desc);
 
-		//printk("rtl8152: rx_bottom urb length %u bytes\n", urb->actual_length);
+		printk("rtl8152: rx_bottom urb length %u bytes\n", urb->actual_length);
 		while (urb->actual_length > len_used) {
 			struct net_device *netdev = tp->netdev;
 			struct net_device_stats *stats = &netdev->stats;
@@ -1948,9 +1948,9 @@ static int rx_bottom(struct r8152 *tp, int budget)
 			}
 
 			skb->ip_summed = r8152_rx_csum(tp, rx_desc);
-			//printk("rtl8152: rx memcpy %u bytes.\n", pkt_len);
+			printk("rtl8152: rx memcpy %u bytes.\n", pkt_len);
 			memcpy(skb->data, rx_data, pkt_len);
-			//printk("rtl8152: copy end\n");
+			printk("rtl8152: copy end\n");
 			skb_put(skb, pkt_len);
 			skb->protocol = eth_type_trans(skb, netdev);
 			rtl_rx_vlan_tag(rx_desc, skb);
