@@ -5553,6 +5553,7 @@ void tcp_rcv_established(struct sock *sk, struct sk_buff *skb)
 				 * seq == rcv_nxt and rcv_wup <= rcv_nxt.
 				 * Hence, check seq<=rcv_wup reduces to:
 				 */
+				printk("TCP: fast path: ACK packet\n");
 				if (tcp_header_len ==
 				    (sizeof(struct tcphdr) + TCPOLEN_TSTAMP_ALIGNED) &&
 				    tp->rcv_nxt == tp->rcv_wup)
@@ -5583,6 +5584,8 @@ void tcp_rcv_established(struct sock *sk, struct sk_buff *skb)
 
 			if ((int)skb->truesize > sk->sk_forward_alloc)
 				goto step5;
+
+			printk("TCP: fast path: DATA packet\n");
 
 			/* Predicted packet is in window by definition.
 			 * seq == rcv_nxt and rcv_wup <= rcv_nxt.
@@ -5638,6 +5641,7 @@ step5:
 	if (tcp_ack(sk, skb, FLAG_SLOWPATH | FLAG_UPDATE_TS_RECENT) < 0)
 		goto discard;
 
+	printk("TCP: slow path: ACK/DATA packet\n");
 	tcp_rcv_rtt_measure_ts(sk, skb);
 
 	/* Process urgent data. */
